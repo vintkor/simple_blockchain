@@ -13,13 +13,6 @@ def get_hash(filename):
     return hashlib.sha256(file).hexdigest()
 
 
-def is_first():
-    count = len(os.listdir(CHAIN_DIR))
-    if count == 1:
-        return True
-    return False
-
-
 def random_string_generator(size=10, chars=string.ascii_lowercase + string.digits):
     return ''.join(random.choice(chars) for _ in range(size))
 
@@ -47,7 +40,7 @@ def set_next_link_in_prev_file(filename, prev_filename):
 def write_chain():
     current_filename = random_string_generator(10)
 
-    if is_first():
+    if len(os.listdir(CHAIN_DIR)) == 1:
         prev_filename = '1'
     else:
         prev_filename = get_prev_filename('1')
