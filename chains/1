@@ -1,8 +1,8 @@
 {
-    "name": "Pupkin",
-    "to": "Noname",
     "amount": 10,
     "hash": "",
-    "next": "",
-    "prev": ""
+    "name": "Pupkin",
+    "next": "w11t36uyce",
+    "prev": "",
+    "to": "Noname"
 }

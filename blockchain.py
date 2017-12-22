@@ -1,39 +1,71 @@
-from hashlib import sha256
-from os import listdir, curdir
-from json import dumps
+import hashlib
+import os
+import json
+import random
+import string
 
 
-CHAIN_DIR = curdir + '/chains/'
-
-
-def get_last_file():
-    files = listdir(CHAIN_DIR)
-    sort_files = sorted(files, key=int)
-    return sort_files[-1]
-
-
-def make_new_filename():
-    last_file_name = int(get_last_file())
-    new_file_name = last_file_name + 1
-    return str(new_file_name)
+CHAIN_DIR = os.curdir + '/chains/'
 
 
 def get_hash(filename):
     file = open(CHAIN_DIR + filename, 'rb').read()
-    return sha256(file).hexdigest()
+    return hashlib.sha256(file).hexdigest()
+
+
+def is_first():
+    count = len(os.listdir(CHAIN_DIR))
+    if count == 1:
+        return True
+    return False
+
+
+def random_string_generator(size=10, chars=string.ascii_lowercase + string.digits):
+    return ''.join(random.choice(chars) for _ in range(size))
+
+
+def get_prev_filename(firts_file):
+    stop = True
+    filename = firts_file
+    while stop:
+        with open(CHAIN_DIR + filename, 'r') as file:
+            next_link = json.load(file)['next']
+            if next_link is '':
+                stop = False
+                return filename
+            filename = next_link
+
+
+def set_next_link_in_prev_file(filename, prev_filename):
+    with open(CHAIN_DIR + prev_filename, 'r+') as file:
+        f = json.load(file)
+        f.update({'next': filename})
+        file.seek(0)
+        file.write(json.dumps(f, indent=4))
 
 
 def write_chain():
-    prev_hash = get_hash(get_last_file())
+    current_filename = random_string_generator(10)
+
+    if is_first():
+        prev_filename = '1'
+    else:
+        prev_filename = get_prev_filename('1')
+
+    set_next_link_in_prev_file(current_filename, prev_filename)
+    prev_hash = get_hash(prev_filename)
+
     data = {
         "name": "Pupkin 2",
         "to": "Noname",
         "amount": 10,
         "hash": prev_hash,
+        "next": "",
+        "prev": prev_filename,
     }
 
-    with open(CHAIN_DIR + make_new_filename(), 'w') as file:
-        file.write(dumps(data, indent=4))
+    with open(CHAIN_DIR + current_filename, 'w') as file:
+        file.write(json.dumps(data, indent=4))
 
 
 if __name__ == '__main__':
