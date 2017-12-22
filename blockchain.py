@@ -18,9 +18,9 @@ def random_string_generator(size=10, chars=string.ascii_lowercase + string.digit
 
 
 def get_prev_filename(firts_file):
-    stop = True
+    non_stop = True
     filename = firts_file
-    while stop:
+    while non_stop:
         with open(CHAIN_DIR + filename, 'r') as file:
             next_link = json.load(file)['next']
             if next_link is '':
@@ -61,5 +61,42 @@ def write_chain():
         file.write(json.dumps(data, indent=4))
 
 
+def get_next_filename(current_filename):
+    with open(CHAIN_DIR + current_filename, 'r') as file:
+        next_filename = json.load(file)['next']
+        return next_filename
+
+
+def check_integrity():
+    non_stop = True
+    filename = '1'
+    chain_number = 0
+    ok = 'ok'
+    corrupted = 'CORRUPTED'
+
+    while non_stop:
+        if filename == '1':
+            next_filename = get_next_filename(filename)
+            if next_filename == '':
+                non_stop = False
+            filename = next_filename
+        else:
+            with open(CHAIN_DIR + filename, 'r') as file:
+                json_data = json.load(file)
+                prev_file_hash = get_hash(json_data['prev'])
+                current_file_hash = json_data['hash']
+                if prev_file_hash == current_file_hash:
+                    print('Block {} ({}) is {}'.format(chain_number, json_data['prev'], ok))
+                else:
+                    print('Block {} ({}) is {}'.format(chain_number, json_data['prev'], corrupted))
+                if json_data['next'] != '':
+                    filename = json_data['next']
+                else:
+                    non_stop = False
+                    print('Block {} ({}) is {}'.format(chain_number + 1, json_data['next'], 'not yet conducted'))
+        chain_number += 1
+
+
 if __name__ == '__main__':
     write_chain()
+    check_integrity()
