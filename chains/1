@@ -2,5 +2,7 @@
     "name": "Pupkin",
     "to": "Noname",
     "amount": 10,
-    "hash": ""
+    "hash": "",
+    "next": "",
+    "prev": ""
 }
